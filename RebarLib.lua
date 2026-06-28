@@ -6,6 +6,16 @@ setmetatable(RebarLib, {
 })
 _ENV = RebarLib
 
+--[[
+    Создаёт равномерную раскладку арматурных стержней вдоль вектора.
+    
+    Аргументы:
+        rebarStyleId - идентификатор стиля арматуры
+        curve3D      - базовая кривая (один стержень)
+        fullLength   - общая длина раскладки
+        step         - шаг между стержнями
+        vector       - направление раскладки (Vector3D)
+]]
 function CreateRebarLayout(rebarStyleId, curve3D, fullLength, step, vector)
     local rebar_radius = MathLib.GetRebarRadius(rebarStyleId)
     local number = math.floor((fullLength - rebar_radius * 2) / step)
@@ -22,6 +32,18 @@ function CreateRebarLayout(rebarStyleId, curve3D, fullLength, step, vector)
     end
 end
 
+--[[
+    Создаёт раскладку арматурных стержней с отступами от краёв.
+    Добавляет дополнительный стержень в конце.
+    
+    Аргументы:
+        rebarStyleId - идентификатор стиля арматуры
+        curve3D      - базовая кривая (один стержень)
+        fullLength   - общая длина раскладки
+        freeEnd      - отступ от каждого края
+        step         - шаг между стержнями
+        vector       - направление раскладки (Vector3D)
+]]
 function CreateRebarLayoutWithFreeEnd(rebarStyleId, curve3D, fullLength, freeEnd, step, vector)
     local rebar_radius = MathLib.GetRebarRadius(rebarStyleId)
     local length = fullLength - freeEnd * 2
@@ -47,6 +69,16 @@ function CreateRebarLayoutWithFreeEnd(rebarStyleId, curve3D, fullLength, freeEnd
     Style.AddRebar(rebarStyleId, curve3D)
 end
 
+--[[
+    Создаёт спиральную арматуру с заданным количеством витков.
+    
+    Аргументы:
+        point3d     - начальная точка (Point3D)
+        radius      - радиус спирали
+        step        - шаг витка
+        n           - количество витков
+        rebarStyleId - идентификатор стиля арматуры
+]]
 function SpiralRebarByStep(point3d, radius, step, n, rebarStyleId)
     local axis = Axis3D(point3d, Vector3D(0, 0, 1))
     local curves = {}
@@ -62,6 +94,17 @@ function SpiralRebarByStep(point3d, radius, step, n, rebarStyleId)
     Style.AddRebar(rebarStyleId, CreateCompositeCurve3D(curves))
 end
 
+--[[
+    Создаёт спиральную арматуру на заданную высоту.
+    Автоматически корректирует последний виток при остатке меньше диаметра стержня.
+    
+    Аргументы:
+        point3d      - начальная точка (Point3D)
+        radius       - радиус спирали
+        step         - шаг витка
+        height       - общая высота спирали
+        rebarStyleId - идентификатор стиля арматуры
+]]
 function SpiralRebarByHeight(point3d, radius, step, height, rebarStyleId)
     local dRebar = MathLib.GetRebarDiameter(rebarStyleId)
     local axis = Axis3D(point3d, Vector3D(0, 0, 1))
@@ -102,4 +145,3 @@ function SpiralRebarByHeight(point3d, radius, step, height, rebarStyleId)
         Style.AddRebar(rebarStyleId, CreateCompositeCurve3D(curves))
     end
 end
-

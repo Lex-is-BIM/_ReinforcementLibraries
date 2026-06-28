@@ -6,6 +6,20 @@ setmetatable(RebarCurveLib, {
 })
 _ENV = RebarCurveLib
 
+--[[
+    Создаёт C-образный хомут (скобу) между двумя точками.
+    
+    Форма: прямая часть с двумя загнутыми концами в одну сторону.
+    
+    Аргументы:
+        startPoint2D     - начальная точка (Point2D)
+        endPoint2D       - конечная точка (Point2D)
+        bendLengthD      - длина загиба в диаметрах стержня
+        rebarStyleId     - идентификатор стиля поперечной арматуры
+        longRebarStyleId - идентификатор стиля продольной арматуры
+    Возвращает:
+        кривая 3D (Curve3D)
+]]
 function C_ClampCurve(startPoint2D, endPoint2D, bendLengthD, rebarStyleId, longRebarStyleId)
     local longR = MathLib.GetRebarRadius(longRebarStyleId)
     local r = MathLib.GetRebarRadius(rebarStyleId)
@@ -26,6 +40,20 @@ function C_ClampCurve(startPoint2D, endPoint2D, bendLengthD, rebarStyleId, longR
     return rebarCurve:Rotate(Axis3D(startPoint, Vector3D(0, 0, 1)), angle)
 end
 
+--[[
+    Создаёт S-образный хомут (скобу) между двумя точками.
+    
+    Форма: два полукруглых изгиба в противоположные стороны.
+    
+    Аргументы:
+        startPoint2D     - начальная точка (Point2D)
+        endPoint2D       - конечная точка (Point2D)
+        bendLengthD      - длина загиба в диаметрах стержня
+        rebarStyleId     - идентификатор стиля поперечной арматуры
+        longRebarStyleId - идентификатор стиля продольной арматуры
+    Возвращает:
+        кривая 3D (Curve3D)
+]]
 function S_ClampCurve(startPoint2D, endPoint2D, bendLengthD, rebarStyleId, longRebarStyleId)
     local longR = MathLib.GetRebarRadius(longRebarStyleId)
     local r = MathLib.GetRebarRadius(rebarStyleId)
@@ -58,6 +86,22 @@ function S_ClampCurve(startPoint2D, endPoint2D, bendLengthD, rebarStyleId, longR
     return rebarCurve:Rotate(Axis3D(startPoint, Vector3D(0, 0, 1)), angle)
 end
 
+--[[
+    Создаёт замкнутый прямоугольный хомут (O-образный).
+    
+    Форма: прямоугольная рамка с загибами в углах.
+    
+    Аргументы:
+        point3D          - опорная точка (левый нижний угол, Point3D)
+        width            - ширина хомута (по оси X)
+        depth            - глубина хомута (по оси Y)
+        angle            - угол поворота хомута в плоскости XY (радианы)
+        bendLengthD      - длина загиба в диаметрах стержня
+        rebarStyleId     - идентификатор стиля поперечной арматуры
+        longRebarStyleId - идентификатор стиля продольной арматуры
+    Возвращает:
+        кривая 3D (Curve3D)
+]]
 function O_ClampCurveByPointAndAngle(point3D, width, depth, angle, bendLengthD, rebarStyleId, longRebarStyleId)
     local longR = MathLib.GetRebarRadius(longRebarStyleId)
     local r = MathLib.GetRebarRadius(rebarStyleId)
@@ -97,4 +141,3 @@ function O_ClampCurveByPointAndAngle(point3D, width, depth, angle, bendLengthD, 
         middlePoints[4], endPoints[1], false), CreateLineSegment3D(endPoints[1], endPoints[2])})
     return CreateCompositeCurve3D({startBend, middlePolyline, endBend}):Rotate(rotateAxis, angle)
 end
-
