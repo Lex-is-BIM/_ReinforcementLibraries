@@ -19,20 +19,15 @@ function DirectionAngle(startPoint2D, endPoint2D)
     local dx = endPoint2D:GetX() - startPoint2D:GetX()
     local dy = endPoint2D:GetY() - startPoint2D:GetY()
 
-    -- Если точки на одной вертикали
     if dx == 0 then
         return dy >= 0 and math.pi / 2 or 3 * math.pi / 2
     end
 
-    -- Базовый острый угол (без учёта квадранта)
     local arrayAngle = math.atan(math.abs(dy) / math.abs(dx))
 
-    -- Определяем квадрант и корректируем угол
     if dx > 0 then
-        -- I и IV квадранты
         return dy >= 0 and arrayAngle or 2 * math.pi - arrayAngle
     else
-        -- II и III квадранты
         return dy >= 0 and math.pi - arrayAngle or math.pi + arrayAngle
     end
 end
@@ -104,10 +99,10 @@ end
     Используется для создания контурной арматуры (хомутов).
     
     Аргументы:
-        length  - длина прямоугольника (по оси X)
-        width   - ширина прямоугольника (по оси Y)
+        length   - длина прямоугольника (по оси X)
+        width    - ширина прямоугольника (по оси Y)
         n_lenght - количество точек по длине (включая углы)
-        n_width - количество точек по ширине (включая углы)
+        n_width  - количество точек по ширине (включая углы)
     Возвращает:
         таблица с точками Point3D, начиная с левого нижнего угла,
         обход по часовой стрелке
@@ -117,20 +112,15 @@ function RectBorderPoint3DArray(length, width, n_lenght, n_width)
     local lenghtSnap = length / (n_lenght - 1)
     local widthSnap = width / (n_width - 1)
     local longRebarsPoints = {startPoint}
-    
-    -- Левая сторона (снизу вверх)
     for i = 1, n_width - 1 do
         table.insert(longRebarsPoints, startPoint:Clone():Shift(0, widthSnap * i, 0))
     end
-    -- Верхняя сторона (слева направо)
     for i = 1, n_lenght - 1 do
         table.insert(longRebarsPoints, startPoint:Clone():Shift(lenghtSnap * i, width, 0))
     end
-    -- Правая сторона (сверху вниз)
     for i = 1, n_width - 1 do
         table.insert(longRebarsPoints, startPoint:Clone():Shift(length, width, 0):Shift(0, -widthSnap * i, 0))
     end
-    -- Нижняя сторона (справа налево)
     for i = 1, n_lenght - 1 do
         table.insert(longRebarsPoints, startPoint:Clone():Shift(length, 0, 0):Shift(-lenghtSnap * i, 0, 0))
     end
@@ -181,4 +171,38 @@ end
 function GetRebarRadius(rebarStyleId)
     local style = Project.GetRebarStyle(rebarStyleId)
     return style:GetParameterValues().Diameter / 2
+end
+
+--[[
+    Вычисляет угол между двумя векторами, заданными тремя точками.
+    Угол между векторами (p1->p2) и (p2->p3).
+    
+    Аргументы:
+        p1, p2, p3 - точки (Point2D или Point3D)
+    Возвращает:
+        угол в радианах (number)
+]]
+function AngleBetweenVectors(p1, p2, p3)
+    local v1 = DirectionVector2D(p1, p2)
+    local v2 = DirectionVector2D(p2, p3)
+    local dot = v1:GetX() * v2:GetX() + v1:GetY() * v2:GetY()
+    local len1 = math.sqrt(v1:GetX()^2 + v1:GetY()^2)
+    local len2 = math.sqrt(v2:GetX()^2 + v2:GetY()^2)
+    return math.acos(dot / (len1 * len2))
+end
+
+--[[
+    Создаёт точку, сдвинутую под углом 45°.
+    Используется для построения скруглений в хомутах.
+    
+    Аргументы:
+        point     - исходная точка (Point3D)
+        distance  - расстояние смещения
+        direction - направление (1 или -1)
+    Возвращает:
+        Point3D
+]]
+function ShiftDiagonal45(point, distance, direction)
+    local d = distance * math.cos(math.pi / 4)
+    return point:Clone():Shift(d * direction, d * direction, 0)
 end
